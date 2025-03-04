@@ -1,7 +1,7 @@
 package com.task_tracker.technical.handler;
 
 import com.task_tracker.technical.exception.CustomValidationException;
-import com.task_tracker.technical.exception.EmptyFieldException;
+import com.task_tracker.technical.exception.FieldsValidationException;
 import com.task_tracker.technical.exception.ResourceNotFoundException;
 import com.task_tracker.users_api.exception.DuplicateEmailException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -39,8 +39,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    @ExceptionHandler(EmptyFieldException.class)
-    public ResponseEntity<String> handleEmptyFieldException(EmptyFieldException ex) {
+    @ExceptionHandler(FieldsValidationException.class)
+    public ResponseEntity<String> handleEmptyFieldException(FieldsValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
