@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
@@ -74,14 +72,14 @@ public class TasksController {
 
     @PostMapping(path = "/filter")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<TaskDto>> filterTasks(
+    public ResponseEntity<TaskEnvelopDto> filterTasks(
             @Valid @RequestBody TaskFilterDto filterDto,
             BindingResult bindingResult
     ) {
         if (bindingResult.hasErrors()) {
             throw new CustomValidationException(bindingResult);
         }
-        var filteredListTasks = taskService.filterTasks(filterDto);
-        return ResponseEntity.ok(filteredListTasks);
+        var taskEnvelopDto = taskService.filterTasks(filterDto);
+        return ResponseEntity.ok(taskEnvelopDto);
     }
 }

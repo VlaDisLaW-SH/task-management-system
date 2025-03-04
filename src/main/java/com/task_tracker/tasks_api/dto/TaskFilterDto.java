@@ -34,6 +34,21 @@ public class TaskFilterDto {
      */
     private Long assignerId;
 
+    /**
+     * Страница
+     */
+    private Integer page;
+
+    /**
+     * Кол-во элементов
+     */
+    private Integer size;
+
+    /**
+     * Значение сортировки
+     */
+    private String sortBy;
+
     @JsonCreator
     public TaskFilterDto(
             @JsonProperty("status") String status,
@@ -59,6 +74,16 @@ public class TaskFilterDto {
             }
         } else {
             this.priority = null;
+        }
+
+        if (page == null) {
+            this.page = 1;
+        }
+        if (size == null) {
+            this.size = 10;
+        }
+        if (sortBy == null || sortBy.isEmpty()) {
+            this.sortBy = "id";
         }
 
         this.createdById = createdById;

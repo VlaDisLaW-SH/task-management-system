@@ -5,6 +5,7 @@ import com.task_tracker.comments_api.dto.CommentForTaskCreateDto;
 import com.task_tracker.comments_api.mapper.CommentMapper;
 import com.task_tracker.comments_api.repository.CommentRepository;
 import com.task_tracker.tasks_api.dto.*;
+import com.task_tracker.tasks_api.enumeration.TaskSortField;
 import com.task_tracker.tasks_api.mapper.TaskMapper;
 import com.task_tracker.tasks_api.model.Task;
 import com.task_tracker.tasks_api.repository.TaskRepository;
@@ -14,11 +15,12 @@ import com.task_tracker.users_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 
 @Service
@@ -107,7 +109,7 @@ public class TaskService {
         taskRepository.delete(task);
     }
 
-    public List<TaskDto> filterTasks(TaskFilterDto filter) {
+    public TaskEnvelopDto filterTasks(TaskFilterDto filter) {
         var createdById = filter.getCreatedById();
         var assignerId = filter.getAssignerId();
 
@@ -121,10 +123,33 @@ public class TaskService {
                 throw new FieldsValidationException("Пользователь с ID " + assignerId + " не зарегистрирован в системе");
             }
         }
-        return taskRepository.findByFilters(filter)
-                .stream()
+        if (filter.getPage() < 1) {
+            throw new FieldsValidationException("Индекс страницы не должен быть меньше единицы");
+        }
+        if (filter.getSize() < 1) {
+            throw new FieldsValidationException("Размер страницы не должен быть меньше единицы");
+        }
+
+        boolean isValidSortBy = Arrays.stream(TaskSortField.values())
+                .anyMatch(field -> field.getField().equals(filter.getSortBy()));
+        if (!isValidSortBy) {
+            throw new FieldsValidationException("Недопустимое поле сортировки: " + filter.getSortBy());
+        }
+
+        Pageable pageable = PageRequest.of(
+                filter.getPage() - 1,
+                filter.getSize(),
+                Sort.by(filter.getSortBy())
+        );
+        var taskPage = taskRepository.findByFilters(filter, pageable);
+        var taskDto = taskPage.stream()
                 .map(taskMapper::map)
                 .toList();
+        return new TaskEnvelopDto(
+                taskDto,
+                taskPage.getTotalElements(),
+                taskPage.getTotalPages()
+        );
     }
 
     private void setAssignerForUpdate(Task task, Long userId) {
