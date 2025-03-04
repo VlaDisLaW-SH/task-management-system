@@ -4,14 +4,11 @@ import com.task_tracker.comments_api.dto.CommentCreateDto;
 import com.task_tracker.comments_api.dto.CommentForTaskCreateDto;
 import com.task_tracker.comments_api.mapper.CommentMapper;
 import com.task_tracker.comments_api.repository.CommentRepository;
-import com.task_tracker.tasks_api.dto.TaskCreateDto;
-import com.task_tracker.tasks_api.dto.TaskDto;
-import com.task_tracker.tasks_api.dto.TaskEnvelopDto;
-import com.task_tracker.tasks_api.dto.TaskUpdateDto;
+import com.task_tracker.tasks_api.dto.*;
 import com.task_tracker.tasks_api.mapper.TaskMapper;
 import com.task_tracker.tasks_api.model.Task;
 import com.task_tracker.tasks_api.repository.TaskRepository;
-import com.task_tracker.technical.exception.EmptyFieldException;
+import com.task_tracker.technical.exception.FieldsValidationException;
 import com.task_tracker.technical.exception.ResourceNotFoundException;
 import com.task_tracker.users_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -64,7 +62,7 @@ public class TaskService {
 
         for (CommentForTaskCreateDto commentForTaskCreateDto: taskDto.getComments()) {
             if (commentForTaskCreateDto.getBody().isEmpty()) {
-                throw new EmptyFieldException("Поле Body не должно быть пустым");
+                throw new FieldsValidationException("Поле Body не должно быть пустым");
             }
             var commentDto = new CommentCreateDto();
             commentDto.setBody(commentForTaskCreateDto.getBody());
@@ -107,6 +105,26 @@ public class TaskService {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id " + id + " no found"));
         taskRepository.delete(task);
+    }
+
+    public List<TaskDto> filterTasks(TaskFilterDto filter) {
+        var createdById = filter.getCreatedById();
+        var assignerId = filter.getAssignerId();
+
+        if (createdById != null) {
+            if (!userRepository.existsById(createdById)) {
+                throw new FieldsValidationException("Пользователь с ID " + createdById + " не зарегистрирован в системе");
+            }
+        }
+        if (assignerId != null) {
+            if (!userRepository.existsById(assignerId)) {
+                throw new FieldsValidationException("Пользователь с ID " + assignerId + " не зарегистрирован в системе");
+            }
+        }
+        return taskRepository.findByFilters(filter)
+                .stream()
+                .map(taskMapper::map)
+                .toList();
     }
 
     private void setAssignerForUpdate(Task task, Long userId) {

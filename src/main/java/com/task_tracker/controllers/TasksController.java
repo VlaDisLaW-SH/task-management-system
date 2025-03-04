@@ -1,9 +1,6 @@
 package com.task_tracker.controllers;
 
-import com.task_tracker.tasks_api.dto.TaskCreateDto;
-import com.task_tracker.tasks_api.dto.TaskDto;
-import com.task_tracker.tasks_api.dto.TaskEnvelopDto;
-import com.task_tracker.tasks_api.dto.TaskUpdateDto;
+import com.task_tracker.tasks_api.dto.*;
 import com.task_tracker.tasks_api.service.TaskService;
 import com.task_tracker.technical.exception.CustomValidationException;
 import jakarta.validation.Valid;
@@ -12,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/tasks")
@@ -71,5 +70,18 @@ public class TasksController {
     @ResponseStatus(HttpStatus.OK)
     public void remove(@PathVariable Long id) {
         taskService.delete(id);
+    }
+
+    @PostMapping(path = "/filter")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<List<TaskDto>> filterTasks(
+            @Valid @RequestBody TaskFilterDto filterDto,
+            BindingResult bindingResult
+    ) {
+        if (bindingResult.hasErrors()) {
+            throw new CustomValidationException(bindingResult);
+        }
+        var filteredListTasks = taskService.filterTasks(filterDto);
+        return ResponseEntity.ok(filteredListTasks);
     }
 }
