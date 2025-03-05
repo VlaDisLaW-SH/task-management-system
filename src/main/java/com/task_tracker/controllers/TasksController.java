@@ -82,4 +82,22 @@ public class TasksController {
         var taskEnvelopDto = taskService.filterTasks(filterDto);
         return ResponseEntity.ok(taskEnvelopDto);
     }
+
+    @PostMapping(path = "/setAssigner")
+    @ResponseStatus(HttpStatus.OK)
+    public void setAssigner(
+            @Valid @RequestBody TaskSetAssignerDto assignerDto,
+            BindingResult bindingResult
+    ) {
+        if (bindingResult.hasErrors()) {
+            throw new CustomValidationException(bindingResult);
+        }
+        taskService.setAssigner(assignerDto);
+    }
+
+    @PostMapping(path = "/removeAssigner/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void removeAssigner(@PathVariable Long id) {
+        taskService.removeAssigner(id);
+    }
 }

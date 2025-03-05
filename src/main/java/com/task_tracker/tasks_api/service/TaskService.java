@@ -1,11 +1,8 @@
 package com.task_tracker.tasks_api.service;
 
-import com.task_tracker.comments_api.mapper.CommentMapper;
-import com.task_tracker.comments_api.repository.CommentRepository;
 import com.task_tracker.tasks_api.dto.*;
 import com.task_tracker.tasks_api.enumeration.TaskSortField;
 import com.task_tracker.tasks_api.mapper.TaskMapper;
-import com.task_tracker.tasks_api.model.Task;
 import com.task_tracker.tasks_api.repository.TaskRepository;
 import com.task_tracker.technical.exception.FieldsValidationException;
 import com.task_tracker.technical.exception.ResourceNotFoundException;
@@ -19,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -29,10 +25,6 @@ public class TaskService {
     private final TaskRepository taskRepository;
 
     private final TaskMapper taskMapper;
-
-    private final CommentMapper commentMapper;
-
-    private final CommentRepository commentRepository;
 
     private final UserRepository userRepository;
 
@@ -121,10 +113,29 @@ public class TaskService {
         );
     }
 
-    private void setAssignerForUpdate(Task task, Long userId) {
-        var user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id "
-                        + userId + " no found"));
-        task.setAssigner(user);
+    public void setAssigner(TaskSetAssignerDto assignerDto) {
+        var task = taskRepository.findById(assignerDto.getTaskId())
+                .orElseThrow(() -> new ResourceNotFoundException("Task with id " + assignerDto.getTaskId()
+                        + " no found"));
+        var assigner = userRepository.findById(assignerDto.getAssignerId())
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + assignerDto.getAssignerId()
+                        + " no found"));
+        if (task.getAssigner() != null) {
+            task.getAssigner().removeTaskFromListAssigner(task);
+        }
+        task.setAssigner(assigner);
+        assigner.addTaskInListAssigner(task);
+        taskRepository.save(task);
+    }
+
+    public void removeAssigner(Long taskId) {
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task with id " + taskId + " no found"));
+        if (task.getAssigner() == null) {
+            throw new ResourceNotFoundException("У задачи с ID " + taskId + " отсутствует исполнитель");
+        }
+        task.getAssigner().removeTaskFromListAssigner(task);
+        task.setAssigner(null);
+        taskRepository.save(task);
     }
 }

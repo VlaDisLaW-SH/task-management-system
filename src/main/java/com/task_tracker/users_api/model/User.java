@@ -88,4 +88,12 @@ public class User {
     @CreatedDate
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    public void addTaskInListAssigner(Task task) {
+        listTasksAssigner.add(task);
+    }
+
+    public void removeTaskFromListAssigner(Task task) {
+        listTasksAssigner.remove(task);
+    }
 }
