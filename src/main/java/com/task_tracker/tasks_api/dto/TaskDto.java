@@ -1,6 +1,7 @@
 package com.task_tracker.tasks_api.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.task_tracker.comments_api.dto.CommentForTaskDto;
 import com.task_tracker.tasks_api.enumeration.TaskPriority;
 import com.task_tracker.tasks_api.enumeration.TaskStatus;
@@ -53,6 +54,7 @@ public class TaskDto {
     /**
      * Список комментариев к задаче, содержащий краткую информацию о комментарии
      */
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<CommentForTaskDto> commentsInfo = new ArrayList<>();
 
     /**

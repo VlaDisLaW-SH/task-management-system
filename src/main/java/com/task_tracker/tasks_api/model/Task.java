@@ -99,8 +99,4 @@ public class Task {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public void setCommentToList(Comment comment) {
-        comments.add(comment);
-    }
 }

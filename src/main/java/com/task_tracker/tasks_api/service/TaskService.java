@@ -1,7 +1,5 @@
 package com.task_tracker.tasks_api.service;
 
-import com.task_tracker.comments_api.dto.CommentCreateDto;
-import com.task_tracker.comments_api.dto.CommentForTaskCreateDto;
 import com.task_tracker.comments_api.mapper.CommentMapper;
 import com.task_tracker.comments_api.repository.CommentRepository;
 import com.task_tracker.tasks_api.dto.*;
@@ -61,43 +59,12 @@ public class TaskService {
     public TaskDto create(TaskCreateDto taskDto) {
         var task = taskMapper.map(taskDto);
         taskRepository.save(task);
-
-        for (CommentForTaskCreateDto commentForTaskCreateDto: taskDto.getComments()) {
-            if (commentForTaskCreateDto.getBody().isEmpty()) {
-                throw new FieldsValidationException("Поле Body не должно быть пустым");
-            }
-            var commentDto = new CommentCreateDto();
-            commentDto.setBody(commentForTaskCreateDto.getBody());
-            commentDto.setTaskId(task.getId());
-            commentDto.setUserId(task.getCreatedBy().getId());
-            var comment = commentMapper.map(commentDto);
-            comment.setUser(task.getCreatedBy());
-            commentRepository.save(comment);
-            task.setCommentToList(comment);
-        }
         return taskMapper.map(task);
     }
 
     public TaskDto update(TaskUpdateDto taskDto, Long id) {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id " + id + " no found"));
-        if (task.getAssigner() == null) {
-            if (taskDto.getAssignerId() == null) {
-                task.setAssigner(null);
-            }
-            if (taskDto.getAssignerId() != null) {
-                setAssignerForUpdate(task, taskDto.getAssignerId());
-            }
-        }
-        if (task.getAssigner() != null) {
-            if (taskDto.getAssignerId() == null) {
-                taskDto.setAssignerId(task.getAssigner().getId());
-                setAssignerForUpdate(task, taskDto.getAssignerId());
-            }
-            if (!Objects.equals(task.getAssigner().getId(), taskDto.getAssignerId())) {
-                setAssignerForUpdate(task, taskDto.getAssignerId());
-            }
-        }
         taskMapper.update(taskDto, task);
         taskRepository.save(task);
         return taskMapper.map(task);
@@ -129,12 +96,14 @@ public class TaskService {
         if (filter.getSize() < 1) {
             throw new FieldsValidationException("Размер страницы не должен быть меньше единицы");
         }
+        // Preconditions.checkState()
 
         boolean isValidSortBy = Arrays.stream(TaskSortField.values())
                 .anyMatch(field -> field.getField().equals(filter.getSortBy()));
         if (!isValidSortBy) {
             throw new FieldsValidationException("Недопустимое поле сортировки: " + filter.getSortBy());
         }
+        // todo вынести валидацию в коммон
 
         Pageable pageable = PageRequest.of(
                 filter.getPage() - 1,

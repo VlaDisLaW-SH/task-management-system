@@ -36,9 +36,4 @@ public class TaskUpdateDto {
      */
     @Pattern(regexp = "LOW|MIDDLE|HIGH", message = "Некорректный приоритет задачи")
     private String priority;
-
-    /**
-     * ID исполнителя задачи
-     */
-    private Long assignerId;
 }
