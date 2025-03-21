@@ -1,5 +1,6 @@
 package com.task_tracker.controllers;
 
+import com.task_tracker.controllers.common.TaskValidator;
 import com.task_tracker.tasks_api.dto.*;
 import com.task_tracker.tasks_api.service.TaskService;
 import com.task_tracker.technical.exception.CustomValidationException;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 public class TasksController {
 
     private final TaskService taskService;
+
+    private final TaskValidator taskValidator;
 
     @GetMapping(path = "")
     @ResponseStatus(HttpStatus.OK)
@@ -79,6 +82,7 @@ public class TasksController {
         if (bindingResult.hasErrors()) {
             throw new CustomValidationException(bindingResult);
         }
+        taskValidator.validateFilterTask(filterDto);
         var taskEnvelopDto = taskService.filterTasks(filterDto);
         return ResponseEntity.ok(taskEnvelopDto);
     }

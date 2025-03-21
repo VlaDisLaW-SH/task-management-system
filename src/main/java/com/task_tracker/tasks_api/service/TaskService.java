@@ -1,7 +1,9 @@
 package com.task_tracker.tasks_api.service;
 
 import com.task_tracker.tasks_api.dto.*;
+import com.task_tracker.tasks_api.enumeration.TaskPriority;
 import com.task_tracker.tasks_api.enumeration.TaskSortField;
+import com.task_tracker.tasks_api.enumeration.TaskStatus;
 import com.task_tracker.tasks_api.mapper.TaskMapper;
 import com.task_tracker.tasks_api.repository.TaskRepository;
 import com.task_tracker.technical.exception.FieldsValidationException;
@@ -69,40 +71,38 @@ public class TaskService {
     }
 
     public TaskEnvelopDto filterTasks(TaskFilterDto filter) {
-        var createdById = filter.getCreatedById();
-        var assignerId = filter.getAssignerId();
 
-        if (createdById != null) {
-            if (!userRepository.existsById(createdById)) {
-                throw new FieldsValidationException("Пользователь с ID " + createdById + " не зарегистрирован в системе");
-            }
+        if (filter.getPage() == null) {
+            filter.setPage(1);
         }
-        if (assignerId != null) {
-            if (!userRepository.existsById(assignerId)) {
-                throw new FieldsValidationException("Пользователь с ID " + assignerId + " не зарегистрирован в системе");
-            }
+        if (filter.getSize() == null) {
+            filter.setSize(10);
         }
-        if (filter.getPage() < 1) {
-            throw new FieldsValidationException("Индекс страницы не должен быть меньше единицы");
+        if (filter.getSortBy() == null || filter.getSortBy().isEmpty()) {
+            filter.setSortBy("id");
         }
-        if (filter.getSize() < 1) {
-            throw new FieldsValidationException("Размер страницы не должен быть меньше единицы");
-        }
-        // Preconditions.checkState()
 
-        boolean isValidSortBy = Arrays.stream(TaskSortField.values())
-                .anyMatch(field -> field.getField().equals(filter.getSortBy()));
-        if (!isValidSortBy) {
-            throw new FieldsValidationException("Недопустимое поле сортировки: " + filter.getSortBy());
+        TaskStatus taskStatus = null;
+        TaskPriority taskPriority = null;
+
+        if (filter.getStatus() != null) {
+            taskStatus = TaskStatus.valueOf(filter.getStatus().toUpperCase());
         }
-        // todo вынести валидацию в коммон
+        if (filter.getPriority() != null) {
+            taskPriority = TaskPriority.valueOf(filter.getPriority().toUpperCase());
+        }
 
         Pageable pageable = PageRequest.of(
                 filter.getPage() - 1,
                 filter.getSize(),
                 Sort.by(filter.getSortBy())
         );
-        var taskPage = taskRepository.findByFilters(filter, pageable);
+        var taskPage = taskRepository.findByFilters(
+                taskStatus,
+                taskPriority,
+                filter.getCreatedById(),
+                filter.getAssignerId(),
+                pageable);
         var taskDto = taskPage.stream()
                 .map(taskMapper::map)
                 .toList();

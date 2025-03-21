@@ -1,6 +1,7 @@
 package com.task_tracker.tasks_api.repository;
 
-import com.task_tracker.tasks_api.dto.TaskFilterDto;
+import com.task_tracker.tasks_api.enumeration.TaskPriority;
+import com.task_tracker.tasks_api.enumeration.TaskStatus;
 import com.task_tracker.tasks_api.model.Task;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,10 +16,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    @Query("SELECT t FROM Task t " +
-            "WHERE (:#{#filter.status} IS NULL OR t.status = :#{#filter.status}) " +
-            "AND (:#{#filter.priority} IS NULL OR t.priority = :#{#filter.priority}) " +
-            "AND (:#{#filter.createdById} IS NULL OR t.createdBy.id = :#{#filter.createdById}) " +
-            "AND (:#{#filter.assignerId} IS NULL OR t.assigner.id = :#{#filter.assignerId})")
-    Page<Task> findByFilters(@Param("filter") TaskFilterDto filter, Pageable pageable);
+    @Query(value = "SELECT t FROM Task t " +
+            "WHERE (:status IS NULL OR t.status = :status) " +
+            "AND (:priority IS NULL OR t.priority = :priority) " +
+            "AND (:createdById IS NULL OR t.createdBy.id = :createdById) " +
+            "AND (:assignerId IS NULL OR t.assigner.id = :assignerId)")
+    Page<Task> findByFilters(@Param("status") TaskStatus status,
+                             @Param("priority") TaskPriority priority,
+                             @Param("createdById") Long createdById,
+                             @Param("assignerId") Long assignerId,
+                             Pageable pageable);
 }

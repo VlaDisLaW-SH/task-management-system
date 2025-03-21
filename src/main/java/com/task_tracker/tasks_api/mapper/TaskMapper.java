@@ -33,7 +33,6 @@ public abstract class TaskMapper {
     @Mapping(target = "commentsInfo",source = "comments")
     public abstract TaskDto map(Task model);
 
-    @Mapping(target = "assigner", source = "assignerId")
     public abstract void update(TaskUpdateDto dto, @MappingTarget Task model);
 
     @Mapping(source = "user", target = "userInfo")
