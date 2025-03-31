@@ -2,7 +2,6 @@ package com.task_tracker.tasks_api.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,15 +27,13 @@ public class TaskCreateDto {
     /**
      * Статус
      */
-    @NotNull(message = "Статус задачи не может быть пустым")
-    @Pattern(regexp = "NEW|IN_PROGRESS|COMPLETED|TO_FIXING|CANCELLED|CLOSED", message = "Некорректный статус задачи")
+    @NotNull(message = "Статус задачи не может быть пустым")// todo notblank
     private String status;
 
     /**
      * Приоритет
      */
     @NotNull(message = "Приоритет задачи не может быть пустым")
-    @Pattern(regexp = "LOW|MIDDLE|HIGH", message = "Некорректный приоритет задачи")
     private String priority;
 
     /**

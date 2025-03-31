@@ -32,6 +32,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:1.7.0")
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("com.google.guava:guava:33.4.0-jre")
 }
 
 tasks.test {

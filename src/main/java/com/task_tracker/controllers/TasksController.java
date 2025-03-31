@@ -47,6 +47,7 @@ public class TasksController {
         if (bindingResult.hasErrors()) {
             throw new CustomValidationException(bindingResult);
         }
+        taskValidator.validateCreateTask(taskData);
         var task = taskService.create(taskData);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -63,6 +64,7 @@ public class TasksController {
         if (bindingResult.hasErrors()) {
             throw new CustomValidationException(bindingResult);
         }
+        taskValidator.validateUpdateTask(taskData);
         var task = taskService.update(taskData, id);
         return ResponseEntity.ok(task);
     }

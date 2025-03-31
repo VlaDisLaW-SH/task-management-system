@@ -2,11 +2,9 @@ package com.task_tracker.tasks_api.service;
 
 import com.task_tracker.tasks_api.dto.*;
 import com.task_tracker.tasks_api.enumeration.TaskPriority;
-import com.task_tracker.tasks_api.enumeration.TaskSortField;
 import com.task_tracker.tasks_api.enumeration.TaskStatus;
 import com.task_tracker.tasks_api.mapper.TaskMapper;
 import com.task_tracker.tasks_api.repository.TaskRepository;
-import com.task_tracker.technical.exception.FieldsValidationException;
 import com.task_tracker.technical.exception.ResourceNotFoundException;
 import com.task_tracker.users_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor

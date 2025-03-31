@@ -1,6 +1,8 @@
 package com.task_tracker.controllers.common;
 
+import com.task_tracker.tasks_api.dto.TaskCreateDto;
 import com.task_tracker.tasks_api.dto.TaskFilterDto;
+import com.task_tracker.tasks_api.dto.TaskUpdateDto;
 import com.task_tracker.tasks_api.enumeration.TaskPriority;
 import com.task_tracker.tasks_api.enumeration.TaskSortField;
 import com.task_tracker.tasks_api.enumeration.TaskStatus;
@@ -16,18 +18,28 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class TaskValidator {
 
-    private final UserRepository userRepository;
+    private final UserRepository userRepository; //todo заменить на сервис
 
-    public void validateFilterTask(TaskFilterDto filterDto) {
+    public void validateCreateTask(final TaskCreateDto createDto) {
+        validStatus(createDto.getStatus());
+        validPriority(createDto.getPriority());
+    }
+
+    public void validateUpdateTask(final TaskUpdateDto updateDto) {
+        if (updateDto.getStatus() != null) {
+            validStatus(updateDto.getStatus());
+        }
+        if (updateDto.getPriority() != null) {
+            validPriority(updateDto.getPriority());
+        }
+    }
+
+    public void validateFilterTask(final TaskFilterDto filterDto) {
         if (filterDto.getStatus() != null) {
-            if (!EnumUtils.isValidEnumIgnoreCase(TaskStatus.class, filterDto.getStatus())) {
-                throw new FieldsValidationException("Некорректное значение статуса: " + filterDto.getStatus());
-            }
+            validStatus(filterDto.getStatus());
         }
         if (filterDto.getPriority() != null) {
-            if (!EnumUtils.isValidEnumIgnoreCase(TaskPriority.class, filterDto.getPriority())) {
-                throw new FieldsValidationException("Некорректное значение приоритета: " + filterDto.getPriority());
-            }
+            validPriority(filterDto.getPriority());
         }
         if (filterDto.getCreatedById() != null) {
             if (!userRepository.existsById(filterDto.getCreatedById())) {
@@ -53,6 +65,18 @@ public class TaskValidator {
             if (!isValidSortBy) {
                 throw new FieldsValidationException("Недопустимое поле сортировки: " + filterDto.getSortBy());
             }
+        }
+    }
+
+    private void validStatus(final String status) {
+        if (!EnumUtils.isValidEnumIgnoreCase(TaskStatus.class, status)) {
+            throw new FieldsValidationException("Некорректное значение статуса: " + status);
+        }
+    }
+
+    private void validPriority(final String priority) {
+        if (!EnumUtils.isValidEnumIgnoreCase(TaskPriority.class, priority)) {
+            throw new FieldsValidationException("Некорректное значение приоритета: " + priority);
         }
     }
 }
